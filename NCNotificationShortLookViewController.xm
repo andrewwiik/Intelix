@@ -5,6 +5,7 @@
 %hook NCNotificationShortLookViewController
 - (void)setDelegate:(NSObject *)delegate {
 	%orig;
+	// HBLogInfo(@"Method #88");
 	if (delegate && [delegate isKindOfClass:NSClassFromString(@"NCNotificationCombinedListViewController")]) {
 		if (self.view) {
 			if (self.view.contentView) {
@@ -49,6 +50,7 @@
 }
 
 - (void)_notificationViewControllerViewDidLoad {
+	// HBLogInfo(@"Method #89");
 	%orig;
 
 	if ([self valueForKey:@"_delegate"] && [[self valueForKey:@"_delegate"] isKindOfClass:NSClassFromString(@"NCNotificationCombinedListViewController")]) {

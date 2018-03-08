@@ -2,9 +2,11 @@
 #import "NCNotificationChronologicalList.h"
 #import <UserNotificationsKit/NCNotificationRequest.h>
 #import "ITXNotificationsSection.h"
+#import "NCNotificationCombinedListViewController.h"
 
 @interface NCNotificationPriorityList (Intelix)
 @property (nonatomic, retain) NSMutableArray<ITXNotificationsSection *> *sections;
+@property (nonatomic, retain) NCNotificationCombinedListViewController *controller;
 - (NSUInteger)sectionCount;
 - (NSUInteger)rowCountForSectionIndex:(NSUInteger)section;
 - (NSUInteger)actualCountInSection:(NSUInteger)section;
@@ -22,4 +24,6 @@
 
 - (NSString *)titleForSectionIndex:(NSUInteger)section;
 - (NSString *)identifierForSectionIndex:(NSUInteger)section;
+
+- (void)recomputeCount;
 @end

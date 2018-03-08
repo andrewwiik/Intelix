@@ -1,10 +1,10 @@
 export ADDITIONAL_CFLAGS = -I$(THEOS_PROJECT_DIR)/headers
 
-# ifeq ($(SIMULATOR),1)
-# 	export TARGET = simulator:latest:7.0
-# else
-# 	export TARGET = iphone:latest:7.0
-# endif
+ifeq ($(SIMULATOR),1)
+	export TARGET = simulator:latest:7.0
+else
+	export TARGET = iphone:latest:7.0
+endif
 
 ARCHS = arm64
 
@@ -14,6 +14,11 @@ include $(THEOS)/makefiles/common.mk
 TWEAK_NAME = Intelix
 Intelix_CFLAGS = -I$(THEOS_PROJECT_DIR)/headers
 Intelix_FILES = $(wildcard *.m) $(wildcard *.xm)
+NCNotificationCombinedListViewController.xm_CFLAGS += -fobjc-arc
+ITXNCGroupBackgroundView.m_CFLAGS += -fobjc-arc
+NCNotificationChronologicalList.xm_CFLAGS += -fobjc-arc
+ITXNotificationsSection.m_CFLAGS += -fobjc-arc
+NCNotificationListCollectionViewFlowLayout.xm_CFLAGS += -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 

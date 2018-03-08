@@ -10,20 +10,24 @@
 
 %new
 -(id)clearAllRequests {
+	// HBLogInfo(@"Method #49");
 	return nil;
 }
 
 %new
 -(id)clearNonPersistentRequests {
+	// HBLogInfo(@"Method #50");
 	return nil;
 }
 
 %new
 -(id)_clearRequestsWithPersistence:(NSUInteger)arg1 {
+	// HBLogInfo(@"Method #51");
 	return nil;
 }
 
 -(id)init {
+	// HBLogInfo(@"Method #52");
 	NCNotificationChronologicalList *orig = %orig;
 	if (orig) {
 		orig.collapsedSectionIdentifiers = [NSMutableArray new];
@@ -34,20 +38,25 @@
 
 - (NCNotificationListSection *)_existingSectionForNotificationRequest:(NCNotificationRequest *)request {
 	//return nil;
-	id r = %orig;
-	NSLog(@"STUFF %@", r);
+	// HBLogInfo(@"Method #53");
+	NCNotificationListSection *section = %orig;
+	NCNotificationListSection *sectionObj = nil;
+	NSLog(@"STUFF %@", section);
 	NSArray *sections = [self sections];
 	if (sections && [sections count] > 0) {
 		for (NCNotificationListSection *section in sections) {
 			if ([section.otherSectionIdentifier isEqualToString:request.sectionIdentifier]) {
-				return section;
+				sectionObj = section;
+				break;
 			}
 		}
 	}
+	if (sectionObj) return sectionObj;
 	return nil;
 }
 
 - (NCNotificationListSection *)_newSectionForNotificationRequest:(NCNotificationRequest *)request {
+	// HBLogInfo(@"Method #54");
 	NCNotificationListSection *sec = %orig;
 	NSString *identifier = request.sectionIdentifier;
 	if (!identifier) {
@@ -73,6 +82,7 @@
 
 %new
 - (BOOL)sectionIsCollapsed:(NSUInteger)sectionIndex {
+	// HBLogInfo(@"Method #55");
 	if (sectionIndex < [self.sections count]) {
 		NCNotificationListSection *section = [self.sections objectAtIndex:sectionIndex];
 		if (section) {
@@ -86,6 +96,7 @@
 
 %new
 - (BOOL)sectionIsExpanded:(NSUInteger)sectionIndex {
+	// HBLogInfo(@"Method #56");
 	if (sectionIndex < [self.sections count]) {
 		NCNotificationListSection *section = [self.sections objectAtIndex:sectionIndex];
 		if (section) {
@@ -99,6 +110,7 @@
 
 %new
 - (NSUInteger)actualNumberOfNotificationsInSection:(NSUInteger)sectionIndex {
+	// HBLogInfo(@"Method #57");
 	if (sectionIndex < [self.sections count]) {
 		NCNotificationListSection *section = [self.sections objectAtIndex:sectionIndex];
 		return [section count];
@@ -108,6 +120,7 @@
 
 %new
 - (NSString *)otherSectionIdentifierForSectionIndex:(NSUInteger)sectionIndex {
+	// HBLogInfo(@"Method #58");
 	if (sectionIndex < [self.sections count]) {
 		return [self.sections objectAtIndex:sectionIndex].otherSectionIdentifier;
 	}
@@ -116,7 +129,7 @@
 
 %new
 - (NSUInteger)sectionIndexForOtherSectionIdentifier:(NSString *)otherSectionIdentifier {
-
+	// HBLogInfo(@"Method #59");
 	for (NCNotificationListSection *section in self.sections) {
 		if ([section.otherSectionIdentifier isEqualToString:otherSectionIdentifier]) {
 			return [self.sections indexOfObject:section];
@@ -127,6 +140,7 @@
 
 %new
 - (void)toggleExpansionForSectionIdentifier:(NSString *)sectionIdentifier {
+	// HBLogInfo(@"Method #60");
 	if ([self.collapsedSectionIdentifiers containsObject:sectionIdentifier]) {
 		[self.collapsedSectionIdentifiers removeObject:sectionIdentifier];
 		[self.expandedSectionIdentifiers addObject:sectionIdentifier];
@@ -162,6 +176,7 @@
 
 %new
 - (BOOL)sectionHasFooter:(NSUInteger)sectionIndex {
+	// HBLogInfo(@"Method #61");
 	//return NO;
 	if (sectionIndex < [self.sections count]) {
 		NCNotificationListSection *section = [self.sections objectAtIndex:sectionIndex];
@@ -184,6 +199,7 @@
 // }
 
 - (NSUInteger)rowCountForSectionIndex:(NSUInteger)sectionIndex {
+	// HBLogInfo(@"Method #62");
 	NSUInteger orig = %orig;
 	if (orig >= 3) {
 		NCNotificationListSection *section = [self.sections objectAtIndex:sectionIndex];
@@ -199,6 +215,7 @@
 }
 
 - (id)insertNotificationRequest:(NCNotificationRequest *)request {
+	// HBLogInfo(@"Method #63");
 	
 	NSString *sectionIdentifier = request.sectionIdentifier;
 	[ITXHelper setIcon:request.content.icon forIdentifier:request.sectionIdentifier];
@@ -220,6 +237,7 @@
 }
 
 - (id)removeNotificationRequest:(NCNotificationRequest *)request {
+	// HBLogInfo(@"Method #64");
 	NSString *sectionIdentifier = request.sectionIdentifier;
 	if (sectionIdentifier) {
 		if ([self.expandedSectionIdentifiers containsObject:sectionIdentifier] || [self.collapsedSectionIdentifiers containsObject:sectionIdentifier]) {

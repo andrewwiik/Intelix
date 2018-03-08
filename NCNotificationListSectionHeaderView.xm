@@ -11,6 +11,7 @@
 %property (nonatomic, retain) NSString *appIdentifier;
 %property (nonatomic, retain) ITXNCGroupBackgroundView *sectionBackground;
 %property (nonatomic, retain) ITXNCGroupFooterView *footerView;
+%property (nonatomic, assign) BOOL isTopSection;
 
 - (void)setAlpha:(CGFloat)alpha {
 	%orig;
@@ -22,6 +23,7 @@
 
 %new
 - (ITXNCGroupBackgroundView *)sectionBackgroundView {
+	// HBLogInfo(@"Method #65");
 	self.sectionBackground = nil;
 	if (self.sectionBackground) return self.sectionBackground;
 	else {
@@ -34,6 +36,7 @@
 
 %new
 - (ITXNCGroupFooterView *)sectionFooterView {
+	// HBLogInfo(@"Method #66");
 	self.footerView = nil;
 	if (self.footerView) return self.footerView;
 	else {
@@ -47,8 +50,10 @@
 }
 
 -(id)initWithFrame:(CGRect)frame {
+	// HBLogInfo(@"Method #67");
 	NCNotificationListSectionHeaderView *orig = %orig;
 	if (orig && !orig.headerContainerView) {
+		orig.isTopSection = NO;
 		orig.headerContainerView = [[NSClassFromString(@"MTPlatterHeaderContentView") alloc] init];
 		//orig.headerContainerView.isIntelixSectionHeader = YES;
 		[orig addSubview:orig.headerContainerView];
@@ -65,6 +70,7 @@
 
 - (void)layoutSubviews {
 	%orig;
+	// HBLogInfo(@"Method #68");
 
 	if (self.clearButton) self.clearButton.hidden = YES;
 	if (self.titleLabel) self.titleLabel.hidden = YES;
@@ -78,6 +84,9 @@
 }
 
 - (void)setTitle:(NSString *)title forSectionIdentifier:(NSString *)sectionIdentifier {
+	self.sectionBackground = nil;
+	self.footerView = nil;
+	// HBLogInfo(@"Method #69");
 	if (title) {
 		NSArray *components = [title componentsSeparatedByString:@"|"];
 		if (components.count > 1) {
@@ -104,6 +113,8 @@
 }
 
 - (void)setOverrideAlpha:(CGFloat)alpha {
+	// HBLogInfo(@"Method #70");
+	if (self.isTopSection) return;
 	%orig;
 	ITXNCGroupBackgroundView *view = [self sectionBackgroundView];
 	if (view) {
@@ -117,6 +128,8 @@
 }
 
 - (void)setOverrideCenter:(CGPoint)center {
+	// HBLogInfo(@"Method #71");
+	if (self.isTopSection) return;
 	%orig;
 	ITXNCGroupBackgroundView *view = [self sectionBackgroundView];
 	if (view) {
@@ -134,6 +147,7 @@
 }
 
 - (void)_resetRevealOverrides {
+	// HBLogInfo(@"Method #72");
 	%orig;
 	ITXNCGroupBackgroundView *view = [self sectionBackgroundView];
 	if (view) {
@@ -147,6 +161,11 @@
 }
 
 - (void)setShouldOverrideForReveal:(BOOL)shouldOverride {
+	// HBLogInfo(@"Method #73");
+	if (self.isTopSection) {
+		%orig(NO);
+		return;
+	}
 	%orig;
 	ITXNCGroupBackgroundView *view = [self sectionBackgroundView];
 	if (view) {
@@ -159,12 +178,19 @@
 	}
 }
 
+- (BOOL)shouldOverrideForReveal {
+	if (self.isTopSection) return NO;
+	else return %orig;
+}
+
 - (void)prepareForReuse {
+	// HBLogInfo(@"Method #74");
 	%orig;
 	self.footerView = nil;
 	self.sectionBackground = nil;
 	self.alpha= 1.0;
 	self.hidden = NO;
+	self.isTopSection = NO;
 	if (self.headerContainerView) {
 		self.headerContainerView.icon = nil;
 		self.headerContainerView.title = @"";

@@ -9,15 +9,17 @@
 #import <Intelix/NCNotificationPriorityList.h>
 #import <Intelix/NCNotificationListSectionHeaderView.h>
 
-static BOOL isIOS11 = YES;
+// static BOOL isIOS11 = YES;
 
 %hook NCNotificationCombinedListViewController
 - (BOOL)_isNotificationRequestForLockScreenNotificationDestination:(NCNotificationRequest *)request {
+	// HBLogInfo(@"Method #25");
 	BOOL orig = %orig;
 	return orig;
 	// return orig;
 	if (orig) {
 		self.showingNotificationsHistory = YES;
+		self.notificationPriorityList.controller = self;
 		//[self _revealNotificationsHistory];
 	}
 	return NO;
@@ -26,10 +28,12 @@ static BOOL isIOS11 = YES;
 
 %new
 - (id)sectionList {
+	// HBLogInfo(@"Method #26");
 	return [self notificationSectionList];
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)layout referenceSizeForHeaderInSection:(NSUInteger)section {
+	// HBLogInfo(@"Method #27");
 	if (section > [self.notificationPriorityList sectionCount] - 1) return %orig;
 	else {
 		if ([collectionView numberOfItemsInSection:section] > 0) {
@@ -45,6 +49,12 @@ static BOOL isIOS11 = YES;
 		cell.hasFooterUnder = [self.sectionList sectionHasFooter:[self _adjustedSectionIndexForListOperation:[indexPath section]]];
 		cell.isLastInSection = [self collectionView:collectionView numberOfItemsInSection:[indexPath section]] - 1 == [indexPath row];
 		cell._isFirstInSection = [indexPath row] == 0;
+		if ([indexPath section] > [self.notificationPriorityList sectionCount] - 1) {
+			cell.hidden = !self.showingNotificationsHistory;
+		} else {
+			cell.hidden = NO;
+			cell.alpha= 1.0;
+		}
 		//cell.hasFooterUnder = [self.sectionList sectionIsCollapsed:[indexPath section]];
 		// cell.cellOver = nil;
 		// cell.cellUnder = nil;
@@ -52,7 +62,54 @@ static BOOL isIOS11 = YES;
 	%orig;
 }
 
+-(void)collectionView:(UICollectionView *)collectionView willDisplaySupplementaryView:(UICollectionReusableView *)view forElementKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath  {
+	if (kind && [kind isEqualToString:[ITXNCGroupBackgroundView elementKind]]) {
+		ITXNCGroupBackgroundView *bgView = (ITXNCGroupBackgroundView *)view;
+		if ([indexPath section] > [self.notificationPriorityList sectionCount] - 1) {
+			bgView.hidden = !self.showingNotificationsHistory;
+			bgView.isTopSection = NO;
+			if (!self.showingNotificationsHistory) {
+				bgView.alpha = 0;
+			}
+		} else {
+			[bgView _resetRevealOverrides];
+			bgView.isTopSection = YES;
+			view.alpha= 1.0;
+			view.hidden = NO;
+		}
+		// if ([indexPath section] == 0) {
+		// 	[bgView _resetRevealOverrides];
+		// 	view.alpha = 1.0;
+		// 	view.hidden = NO;
+		// }
+	} else if (kind && [kind isEqualToString:@"UICollectionElementKindSectionHeader"]) {
+		NCNotificationListSectionHeaderView *headerView = (NCNotificationListSectionHeaderView *)view;
+		if ([indexPath section] > [self.notificationPriorityList sectionCount] - 1) {
+			headerView.hidden = !self.showingNotificationsHistory;
+			headerView.isTopSection = NO;
+			if (!self.showingNotificationsHistory) {
+				headerView.alpha = 0;
+			}
+		} else {
+			headerView.isTopSection = YES;
+			headerView.alpha = 1.0;
+			headerView.hidden = NO;
+		}
+	}
+	%orig;
+}
+
+
 -(id)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath  {
+	// HBLogInfo(@"Method #27");
+	// NSUInteger section = [indexPath section];
+	// if (section > [self.notificationPriorityList sectionCount] - 1) {
+	// 	if ([self.sectionList sectionIsCollapsed:[self _adjustedSectionIndexForListOperation:[indexPath section]]]) {
+	// 		if ([indexPath row] > 2) return nil;
+	// 	}
+	// } else {
+
+	// }
 	NCNotificationListCell *cell = %orig;
 	if ([cell isKindOfClass:NSClassFromString(@"NCNotificationListCell")]) {
 		cell.hasFooterUnder = [self.sectionList sectionHasFooter:[self _adjustedSectionIndexForListOperation:[indexPath section]]];
@@ -63,6 +120,7 @@ static BOOL isIOS11 = YES;
 			cell.hidden = self.showingNotificationsHistory ? NO : YES;
 		} else {
 			cell.hidden = NO;
+			cell.alpha = 1.0;
 			// cell.alpha = 1.0;
 		}
 		//cell.hasFooterUnder = [self.sectionList sectionIsCollapsed:[indexPath section]];
@@ -73,6 +131,7 @@ static BOOL isIOS11 = YES;
 }
 
 -(void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(NCNotificationListCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath  {
+	// HBLogInfo(@"Method #28");
 	%orig;
 	if ([cell isKindOfClass:NSClassFromString(@"NCNotificationListCell")]) {
 		cell.hasFooterUnder = [self.sectionList sectionHasFooter:[self _adjustedSectionIndexForListOperation:[indexPath section]]];
@@ -87,6 +146,7 @@ static BOOL isIOS11 = YES;
 
 -(UIView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath {
 	// return %orig;
+	// HBLogInfo(@"Method #29");
 
 	if (kind && [kind isEqualToString:@"UICollectionElementKindSectionHeader"]) {
 		if ([self.collectionView numberOfItemsInSection:[indexPath section]] > 0) {
@@ -94,38 +154,58 @@ static BOOL isIOS11 = YES;
 			headerView.delegate = self;
 			if ([indexPath section] > [self.notificationPriorityList sectionCount] - 1) {
 				headerView.overrideAlpha = self.showingNotificationsHistory ? 1.0 : 0.0;
+				headerView.isTopSection = NO;
 				[headerView setTitle:[self.sectionList titleForSectionIndex:[self _adjustedSectionIndexForListOperation:[indexPath section]]] forSectionIdentifier:[self.sectionList identifierForSectionIndex:[self _adjustedSectionIndexForListOperation:[indexPath section]]]];
 			} else {
 				headerView.overrideAlpha = 1.0;
+				headerView.alpha = 1.0;
 				headerView.hidden = NO;
+				headerView.isTopSection = YES;
 				[headerView setTitle:[self.notificationPriorityList titleForSectionIndex:[indexPath section]] forSectionIdentifier:[self.notificationPriorityList identifierForSectionIndex:[indexPath section]]];
 				// [headerView setTitle:]
 			}
 			return headerView;
 		}
 	}
-	if (kind && [kind isEqualToString:[ITXNCGroupBackgroundView elementKind]] && [self.collectionView numberOfItemsInSection:[indexPath section]] > 0) {
+	if (kind && [kind isEqualToString:[ITXNCGroupBackgroundView elementKind]]) {
 		ITXNCGroupBackgroundView *backgroundView = [collectionView dequeueReusableSupplementaryViewOfKind:kind withReuseIdentifier:@"ITXNCGroupBackgroundViewReuseIdentifier" forIndexPath:indexPath];
 		backgroundView.isSectionBackground = YES;
+		if ([indexPath section] > [self.notificationPriorityList sectionCount] - 1) {
+			backgroundView.isTopSection = NO;
+		} else {
+			backgroundView.isTopSection = YES;
+		}
 		// if ([indexPath section] > [self.notificationPriorityList sectionCount] - 1) {
-		// 	// backgroundView.isSectionBackground = YES;
-		// 	backgroundView.alpha = self.showingNotificationsHistory ? 1.0 : 0.0;
+		// 	[bgView _resetRevealOverrides];
+		// 	view.alpha = 1.0;
+		// 	view.hidden = NO;
+
 		// } else {
-		// 	backgroundView.alpha = 1.0;
+		// 	if (!self.showingNotificationsHistory) {
+		// 		bgView.alpha = 0;
+		// 	}
 		// }
 		return backgroundView;
 	}
 
-	if (isIOS11 && [indexPath section] < 1) return nil;
+	//if (isIOS11 && [indexPath section] < 1) return %orig;
 
-	if (kind == UICollectionElementKindSectionFooter) {
-		if ([self.sectionList sectionHasFooter:[self _adjustedSectionIndexForListOperation:[indexPath section]]]) {
+	if ([kind isEqualToString:UICollectionElementKindSectionFooter]) {
+		if ([indexPath section] > [self.notificationPriorityList sectionCount] - 1) {
+			if ([self.sectionList sectionHasFooter:[self _adjustedSectionIndexForListOperation:[indexPath section]]]) {
+				ITXNCGroupFooterView *footerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionFooter withReuseIdentifier:@"NotificationListSectionHFooterReuseIdentifier" forIndexPath:indexPath];
+				footerView.numberToShow = [self.sectionList actualNumberOfNotificationsInSection:[self _adjustedSectionIndexForListOperation:[indexPath section]]] - 3;
+				footerView.cellDelegate = self;
+				footerView.sectionIdentifier = [self.sectionList otherSectionIdentifierForSectionIndex:[self _adjustedSectionIndexForListOperation:[indexPath section]]];
+				footerView.isExpanded = [self.sectionList sectionIsExpanded:[self _adjustedSectionIndexForListOperation:[indexPath section]]];
+				footerView.alpha = self.showingNotificationsHistory ? 1.0 : 0.0;
+				footerView.userInteractionEnabled = YES;
+				return footerView;
+			}
+		} else {
 			ITXNCGroupFooterView *footerView = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionFooter withReuseIdentifier:@"NotificationListSectionHFooterReuseIdentifier" forIndexPath:indexPath];
-			footerView.numberToShow = [self.sectionList actualNumberOfNotificationsInSection:[self _adjustedSectionIndexForListOperation:[indexPath section]]] - 3;
-			footerView.cellDelegate = self;
-			footerView.sectionIdentifier = [self.sectionList otherSectionIdentifierForSectionIndex:[self _adjustedSectionIndexForListOperation:[indexPath section]]];
-			footerView.isExpanded = [self.sectionList sectionIsExpanded:[self _adjustedSectionIndexForListOperation:[indexPath section]]];
-			footerView.alpha = self.showingNotificationsHistory ? 1.0 : 0.0;
+			//footerView.numberToShow =
+			footerView.userInteractionEnabled = NO;
 			return footerView;
 		}
 	}
@@ -136,6 +216,7 @@ static BOOL isIOS11 = YES;
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForFooterInSection:(NSInteger)section {
+	// HBLogInfo(@"Method #30");
 	if (section > [self.notificationPriorityList sectionCount] - 1) {
 		if ([self.sectionList sectionHasFooter:[self _adjustedSectionIndexForListOperation:section]]) {
 			return CGSizeMake(collectionView.frame.size.width - 8*2, 36);
@@ -145,6 +226,7 @@ static BOOL isIOS11 = YES;
 }
 
 - (void)viewDidLoad {
+	// HBLogInfo(@"Method #31");
 	%orig;
 	[[self collectionView] registerClass:[ITXNCGroupFooterView class] forSupplementaryViewOfKind:UICollectionElementKindSectionFooter withReuseIdentifier:@"NotificationListSectionHFooterReuseIdentifier"];
 	[[self collectionView] registerClass:[ITXNCGroupBackgroundView class] forSupplementaryViewOfKind:[ITXNCGroupBackgroundView elementKind] withReuseIdentifier:@"ITXNCGroupBackgroundViewReuseIdentifier"];
@@ -152,10 +234,12 @@ static BOOL isIOS11 = YES;
 
 %new
 -(void)sectionFooterView:(ITXNCGroupFooterView *)footerView didReceiveToggleExpansionActionForSectionIdentifier:(NSString *)sectionIdentifier {
+	// HBLogInfo(@"Method #32");
 	[self.sectionList toggleExpansionForSectionIdentifier:sectionIdentifier];
 }
 
 - (void)notificationSectionList:(NCNotificationChronologicalList *)sectionList didInsertNotificationRequest:(NCNotificationRequest *)request atIndexPath:(NSIndexPath *)path {
+	// HBLogInfo(@"Method #33");
 	[self _performCollectionViewOperationBlockIfNecessary:^{
 		[[[self collectionView] collectionViewLayout] invalidateLayout];
 		NSUInteger section = [path section];
@@ -185,8 +269,8 @@ static BOOL isIOS11 = YES;
 }
 
 - (void)notificationSectionList:(NCNotificationChronologicalList *)sectionList didRemoveNotificationRequest:(NCNotificationRequest *)request atIndexPath:(NSIndexPath *)path {
-
-	HBLogInfo(@"Removed Notification: %@\n IndexPath: %@", request, path);
+	// HBLogInfo(@"Method #34");
+	// HBLogInfo(@"Removed Notification: %@\n IndexPath: %@", request, path);
 	// NCNotificationListCell *cell = (NCNotificationListCell *)[[self collectionView] _visibleCellForIndexPath:[self _adjustedSectionIndexPathForCollectionViewOperation:path]];
 	// NSLog(@"NOTIFICATION REMOVAL:\n CELL: %@\nPATH: %@\n,ADJUSTED PATH: %@", cell, path, [self _adjustedSectionIndexPathForCollectionViewOperation:path]);
 
@@ -231,7 +315,8 @@ static BOOL isIOS11 = YES;
 			}
 
 			if ([indexPaths count] > 0) {
-				HBLogInfo(@"Reloading Items: %@", indexPaths);
+				// HBLogInfo(@"Reloading Items: %@", indexPaths);
+				// HBLogInfo(@"Nubmer of Items In Section Before Reload: %@", @([self.collectionView numberOfItemsInSection:[self _adjustedSectionIndexForCollectionViewOperation:section]]));
 				[[self collectionView] reloadItemsAtIndexPaths:[indexPaths copy]];
 			} else {
 
@@ -241,7 +326,7 @@ static BOOL isIOS11 = YES;
 				// }
 			}
 		} else {
-			HBLogInfo(@"Deleting Items: %@", @[[self _adjustedSectionIndexPathForCollectionViewOperation:path]]);
+			// HBLogInfo(@"Deleting Items: %@", @[[self _adjustedSectionIndexPathForCollectionViewOperation:path]]);
 			//NSIndexPath *newPath = [NSIndexPath indexPathForRow:[path row] inSection:[self _adjustedSectionIndexForCollectionViewOperation:[path section]]];
 			[[self collectionView] deleteItemsAtIndexPaths:@[[self _adjustedSectionIndexPathForCollectionViewOperation:path]]];
 			// if ([path row] > 0) {
@@ -284,6 +369,7 @@ static BOOL isIOS11 = YES;
 
 %new
 - (void)notificationSectionList:(NCNotificationChronologicalList *)sectionList didInsertNotificationRequests:(NSArray<NCNotificationRequest *> *)requests atIndexPaths:(NSArray<NSIndexPath *> *)paths reloadIndexPaths:(NSArray<NSIndexPath *> *)reloadPaths {
+	// HBLogInfo(@"Method #35");
 	[self _performCollectionViewOperationBlockIfNecessary:^{
 
 		NSMutableArray *modifiedPaths = [NSMutableArray new];
@@ -331,12 +417,13 @@ static BOOL isIOS11 = YES;
 
 %new
 - (void)notificationSectionList:(NCNotificationChronologicalList *)sectionList didRemoveNotificationRequests:(NSArray<NCNotificationRequest *> *)requests atIndexPaths:(NSArray<NSIndexPath *> *)paths  reloadIndexPaths:(NSArray<NSIndexPath *> *)reloadPaths {
+	// HBLogInfo(@"Method #35");
 	[self _performCollectionViewOperationBlockIfNecessary:^{
 		NSMutableArray *modifiedPaths = [NSMutableArray new];
 		for (NSIndexPath *path in paths) {
 			[modifiedPaths addObject:[self _adjustedSectionIndexPathForCollectionViewOperation:path]];
 		}
-		HBLogInfo(@"Deleting Items A: %@", modifiedPaths);
+		// HBLogInfo(@"Deleting Items A: %@", modifiedPaths);
 		[[self collectionView] deleteItemsAtIndexPaths:[modifiedPaths copy]];
 
 		for (NSIndexPath *path in reloadPaths) {
@@ -371,6 +458,7 @@ static BOOL isIOS11 = YES;
 }
 
 - (void)_updateSectionHeadersRevealHintingForRevealPercentage:(CGFloat)percentage {
+	// HBLogInfo(@"Method #36");
 	%orig;
 	// NSArray<NSIndexPath *> *paths = [[self collectionView] indexPathsForVisibleSupplementaryElementsOfKind:[ITXNCGroupBackgroundView elementKind]];
 	// paths = [self _filteredIndexPathsForAnimationFromIndexPaths:paths];
@@ -406,8 +494,10 @@ static BOOL isIOS11 = YES;
 }
 
 - (BOOL)removeNotificationRequest:(NCNotificationRequest *)request forCoalescedNotification:(id)arg2 {
-	HBLogInfo(@"Removing Request: %@", request);
+	// HBLogInfo(@"Method #37");
+	// HBLogInfo(@"Removing Request: %@", request);
 	if (request && [self.notificationPriorityList containsNotificationRequest:request]) {
+		// HBLogInfo(@"Removing Priority Notification");
 		NSIndexPath *path = [self.notificationPriorityList itx_removeNotificationRequest:request];
 		if (path) {
 			[[[self collectionView] collectionViewLayout] invalidateLayout];
@@ -425,6 +515,7 @@ static BOOL isIOS11 = YES;
 
 
 - (BOOL)modifyNotificationRequest:(NCNotificationRequest *)request forCoalescedNotification:(id)arg2 {
+	// HBLogInfo(@"Method #38");
 	if ([self.notificationPriorityList containsNotificationRequest:request]) {
 		NSIndexPath *path = [self.notificationPriorityList itx_modifyNotificationRequest:request];
 		if (path) {
@@ -443,6 +534,7 @@ static BOOL isIOS11 = YES;
 
 - (BOOL)insertNotificationRequest:(NCNotificationRequest *)request forCoalescedNotification:(id)arg2 {
 	//BOOL hasContent = [self hasContent];
+	// HBLogInfo(@"Method #39");
 	if ([self.notificationPriorityList containsNotificationRequestMatchingRequest:request]) {
 		BOOL result = [self modifyNotificationRequest:request forCoalescedNotification:arg2];
 		if (result) {
@@ -483,16 +575,19 @@ static BOOL isIOS11 = YES;
 }
 
 - (NSUInteger)_adjustedSectionIndexForListOperation:(NSUInteger)sectionIndex {
+	// HBLogInfo(@"Method #40");
 	sectionIndex -= [self.notificationPriorityList sectionCount];
 	return sectionIndex;
 }
 
 - (NSUInteger)_adjustedSectionIndexForCollectionViewOperation:(NSUInteger)sectionIndex {
+	// HBLogInfo(@"Method #41");
 	sectionIndex += [self.notificationPriorityList sectionCount];
 	return sectionIndex;
 }	
 
 - (NCNotificationRequest *)notificationRequestAtIndexPath:(NSIndexPath *)indexPath {
+	// HBLogInfo(@"Method #42");
 	if ([indexPath section] < [self.notificationPriorityList sectionCount]) {
 		return [self.notificationPriorityList notificationRequestAtIndexPath:indexPath];
 	} else {
@@ -501,12 +596,14 @@ static BOOL isIOS11 = YES;
 }
 
 - (NSUInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+	// HBLogInfo(@"Method #43");
 	NSUInteger priorityCount = [self.notificationPriorityList sectionCount];
 	NSUInteger historyCount = [self.sectionList sectionCount];
 	return priorityCount + historyCount;
 }
 
 - (NSUInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSUInteger)section {
+	// HBLogInfo(@"Method #44");
 	if (section < [self.notificationPriorityList sectionCount]) {
 		return [self.notificationPriorityList rowCountForSectionIndex:section];
 	} else {
@@ -515,6 +612,7 @@ static BOOL isIOS11 = YES;
 }
 
 - (NSIndexPath *)indexPathForNotificationRequest:(NCNotificationRequest *)request {
+	// HBLogInfo(@"Method #45");
 	NSIndexPath *priorityPath = [self.notificationPriorityList indexPathForNotificationRequest:request];
 	if (priorityPath != nil) {
 		return priorityPath;
@@ -524,6 +622,7 @@ static BOOL isIOS11 = YES;
 }
 
 - (NSMutableArray<NSIndexPath *> *)_filteredIndexPathsForAnimationFromIndexPaths:(NSArray<NSIndexPath *> *)indexPaths {
+	// HBLogInfo(@"Method #46");
 	NSUInteger lastPrioritySection = [self.notificationPriorityList sectionCount] - 1;
 	NSMutableArray<NSIndexPath *> *newPaths = [NSMutableArray new];
 	for (NSIndexPath *path in indexPaths) {
@@ -535,6 +634,7 @@ static BOOL isIOS11 = YES;
 }
 
 - (void)viewDidAppear:(BOOL)didAppear {
+	// HBLogInfo(@"Method #47");
 	%orig;
 	if (self.collectionView) {
 		[[[self collectionView] collectionViewLayout] invalidateLayout];
@@ -544,6 +644,7 @@ static BOOL isIOS11 = YES;
 }
 
 - (void)_updatePrioritySectionLowestPosition {
+	// HBLogInfo(@"Method #48");
 	NSInteger priorityHighestSection = [self.notificationPriorityList sectionCount] - 1;
 	UICollectionViewLayoutAttributes *attributes = [self.collectionView layoutAttributesForSupplementaryElementOfKind:[ITXNCGroupBackgroundView elementKind] atIndexPath:[NSIndexPath indexPathForRow:0 inSection:priorityHighestSection]];
 	if (attributes) {

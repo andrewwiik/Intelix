@@ -2,7 +2,10 @@
 #import "ITXNCGroupBackgroundConfiguration.h"
 #import <MaterialKit/MTMaterialView.h>
 
-@interface ITXNCGroupBackgroundView : UICollectionReusableView
+@interface ITXNCGroupBackgroundView : UICollectionReusableView {
+	CGRect _previousFrame;
+	CGRect _previousMiddleFrame;
+}
 @property (nonatomic, assign, readwrite) CGRect middleFrame;
 @property (nonatomic, assign, readwrite) CGRect forcedFrame;
 @property (nonatomic, retain, readwrite) ITXAnimatedSeperatedCornersView *topView;
@@ -11,6 +14,7 @@
 @property (nonatomic, retain, readwrite) UIView *containerView;
 @property (nonatomic, retain, readwrite) ITXNCGroupBackgroundConfiguration *configuration;
 @property (nonatomic, assign, readwrite) BOOL isSectionBackground;
+@property (nonatomic, assign, readwrite) BOOL isTopSection;
 + (NSString *)elementKind;
 
 // Notification Animation Stuff :/
@@ -19,4 +23,6 @@
 @property (assign, nonatomic, readwrite) CGFloat overrideAlpha;                                                     //@synthesize overrideAlpha=_overrideAlpha - In the implementation block
 @property (assign, nonatomic, readwrite) CGPoint overrideCenter;
 - (void)_resetRevealOverrides;  
+
+- (void)doConfigUpdate;
 @end

@@ -6,4 +6,5 @@
 @property (assign,nonatomic) CGPoint overrideCenter;  
 - (void)setTitle:(NSString *)title forSectionIdentifier:(NSString *)sectionIdentifier;
 - (void)setBackgroundGroupName:(NSString *)name;  
+- (void)_resetRevealOverrides;
 @end

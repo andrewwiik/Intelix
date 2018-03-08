@@ -1,7 +1,7 @@
 Package: com.ioscreatix.intelix
 Name: Intelix
 Depends: mobilesubstrate
-Version: 1.1.0
+Version: 1.1.4
 Architecture: iphoneos-arm
 Description: Grouped Notifications on iOS 11
 Maintainer: iOS Creatix

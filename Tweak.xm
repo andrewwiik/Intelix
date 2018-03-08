@@ -32,10 +32,11 @@
 
 %hook NCNotificationListSectionRevealHintView
 // - (void)_updateHintTitle {
-// 	HBLogInfo(@"I am Crashing Here");
+// 	// HBLogInfo(@"I am Crashing Here");
 // }
 
 - (NSDate *)titleDate {
+	// HBLogInfo(@"Method #107");
 	NSDate *date = [NSDate date];
 	return date;
 }
@@ -43,6 +44,7 @@
 
 %hook NSCalendar
 - (BOOL)isDateInToday:(NSDate *)date {
+	// HBLogInfo(@"Method #108");
 	NSDate *theDate = date;
 	if (!theDate || theDate == nil) {
 		theDate = [NSDate date];
@@ -54,10 +56,11 @@
 
 %hook NCNotificationChronologicalList
 - (id)_titleForDate:(id)date {
+	// HBLogInfo(@"Method #109");
 	if (!date || date == nil) {
 		date = [NSDate date];
 	}
-	HBLogInfo(@"I am Crashing Here #2");
+	// HBLogInfo(@"I am Crashing Here #2");
 	return %orig(date);
 	// return %orig;
 }

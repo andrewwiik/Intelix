@@ -12,4 +12,5 @@
 @property (nonatomic, assign) BOOL hasFooterUnder;
 @property (nonatomic, retain) UIView *separatorView;
 - (ITXNCGroupBackgroundView *)sectionBackgroundView;
+- (void)doITXStuff;
 @end

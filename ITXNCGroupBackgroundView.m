@@ -5,6 +5,7 @@ static CGFloat headerHeight = 20;
 @implementation ITXNCGroupBackgroundView
 
 - (id)initWithFrame:(CGRect)frame {
+	// HBLogInfo(@"Method #120");
 	self = [super initWithFrame:frame];
 	if (self) {
 		_topView = [[ITXAnimatedSeperatedCornersView alloc] init];
@@ -31,13 +32,16 @@ static CGFloat headerHeight = 20;
 }
 
 - (void)setMiddleFrame:(CGRect)frame {
+	// HBLogInfo(@"Method #121");
 	if (!CGRectEqualToRect(frame, _middleFrame)) {
 		_middleFrame = frame;
+		_previousFrame = CGRectZero;
 		[self layoutSubviews];
 	}
 }
 
 - (void)setForcedFrame:(CGRect)frame {
+	// HBLogInfo(@"Method #122");
 	if (!CGRectEqualToRect(frame, _forcedFrame)) {
 		_forcedFrame = frame;
 		[self layoutSubviews];
@@ -45,19 +49,12 @@ static CGFloat headerHeight = 20;
 }
 
 - (void)setFrame:(CGRect)frame {
+	// HBLogInfo(@"Method #123");
 	[super setFrame:frame];
 	[self layoutSubviews];
 }
 
-- (void)layoutSubviews {
-	[super layoutSubviews];
-	//_isSectionBackground = NO;
-	// Andy Remove this after testing
-	//_forcedFrame = self.frame;
-	// if (!CGRectIsNull(_forcedFrame))
-	//CGRect forcedFrame = _forcedFrame;
-	//self.frame = _forcedFrame;
-
+- (void)doConfigUpdate {
 	CGRect bounds = CGRectMake(0,0,self.bounds.size.width,self.bounds.size.height);
 	_backdropView.frame = bounds;
 	_containerView.frame = bounds;
@@ -80,6 +77,23 @@ static CGFloat headerHeight = 20;
 	_bottomView.frame = CGRectMake(0, bottomY, bounds.size.width, bounds.size.height - bottomY);
 	[_topView layoutSubviews];
 	[_bottomView layoutSubviews];
+	_previousFrame = self.frame;
+}
+
+- (void)layoutSubviews {
+	// HBLogInfo(@"Method #124");
+	[super layoutSubviews];
+	//_isSectionBackground = NO;
+	// Andy Remove this after testing
+	//_forcedFrame = self.frame;
+	// if (!CGRectIsNull(_forcedFrame))
+	//CGRect forcedFrame = _forcedFrame;
+	//self.frame = _forcedFrame;
+
+	if (_previousFrame.size.width != self.frame.size.width || _previousFrame.size.height != self.frame.size.height) {
+
+		[self doConfigUpdate];
+	}
 }
 
 + (NSString *)elementKind {
@@ -87,30 +101,36 @@ static CGFloat headerHeight = 20;
 }
 
 - (void)setOverrideAlpha:(CGFloat)alpha {
+	// HBLogInfo(@"Method #125");
 	_overrideAlpha = alpha;
-	self.alpha = _overrideAlpha;
+	if (!self.isTopSection) self.alpha = _overrideAlpha;
 }
 
 - (void)setOverrideCenter:(CGPoint)center {
+	// HBLogInfo(@"Method #126");
 	_overrideCenter = center;
-	self.center = _overrideCenter;
+	if (!self.isTopSection) self.center = _overrideCenter;
 }
 
 - (void)prepareForReuse {
+	// HBLogInfo(@"Method #127");
 	_isSectionBackground = NO;
+	_isTopSection = NO;
 	[super prepareForReuse];
 	[self _resetRevealOverrides];
 }
 
 - (void)_resetRevealOverrides {
+	// HBLogInfo(@"Method #128");
 	_overrideAlpha = CGFLOAT_MAX;
 	_overrideCenter = CGPointMake(CGFLOAT_MAX, CGFLOAT_MAX);
 	_shouldOverrideForReveal = NO;
 }
 
 - (void)applyLayoutAttributes:(UICollectionViewLayoutAttributes *)attributes {
+	// HBLogInfo(@"Method #129");
 	[super applyLayoutAttributes:attributes];
-	if (_shouldOverrideForReveal) {
+	if (_shouldOverrideForReveal && !self.isTopSection) {
 		if (_overrideAlpha != CGFLOAT_MAX) {
 			[self setAlpha:_overrideAlpha];
 		}

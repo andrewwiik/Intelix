@@ -2,12 +2,32 @@
 #import <Intelix/ITXNotificationsSection.h>
 #import <UserNotificationsKit/NCNotificationRequest.h>
 #import <Intelix/ITXHelper.h>
+#import <Intelix/NCNotificationCombinedListViewController.h>
 
 static NSMutableArray *notifSections;
+NSUInteger cachedCount = 0;
+
+@interface NCNotificationPriorityList ()
+@property (nonatomic, retain) NSMutableArray *lSections;
+@end
 
 %hook NCNotificationPriorityList
+%property (nonatomic, retain) NCNotificationCombinedListViewController *controller;
+%property (nonatomic, retain) NSMutableArray *lSections;
+
+%new
+- (void)recomputeCount {
+	// HBLogInfo(@"Method #201");
+	NSUInteger count = 0;
+	NSMutableArray *sections = self.sections;
+	for (ITXNotificationsSection *section in sections) {
+		count += [section count];
+	}
+	cachedCount = count;
+}
 
 - (id)init {
+	// HBLogInfo(@"Method #1");
 	NCNotificationPriorityList *list = %orig;
 	if (list) {
 		self.sections = [NSMutableArray new];
@@ -17,16 +37,26 @@ static NSMutableArray *notifSections;
 
 %new
 - (NSMutableArray *)sections {
+	// HBLogInfo(@"Method #2");
 	return notifSections;
+	NSMutableArray *sections = self.lSections;
+	if (!sections) {
+		// HBLogInfo(@"Sections was NULL");
+	} else {
+		// HBLogInfo(@"Sections was not NULL");
+	}
+	return sections;
 }
 
 %new
 - (void)setSections:(NSMutableArray *)sections {
+	// HBLogInfo(@"Method #3");
 	notifSections = sections;
 }
 
 %new
 - (NSUInteger)sectionCount {
+	// HBLogInfo(@"Method #4");
 	NSUInteger count = [self.sections count];
 	return count > 0 ? count : 1;
 	// return [self.sections count];
@@ -34,6 +64,7 @@ static NSMutableArray *notifSections;
 
 %new
 - (NSUInteger)rowCountForSectionIndex:(NSUInteger)section {
+	// HBLogInfo(@"Method #5");
 	NSUInteger maxCount = [self.sections count];
 	if (section < maxCount) {
 		return [self.sections[section] count];
@@ -42,6 +73,7 @@ static NSMutableArray *notifSections;
 
 %new
 - (NSUInteger)actualCountInSection:(NSUInteger)section {
+	// HBLogInfo(@"Method #6");
 	NSUInteger maxCount = [self.sections count];
 	if (section < maxCount) {
 		return [self.sections[section] count];
@@ -50,6 +82,7 @@ static NSMutableArray *notifSections;
 
 %new
 - (NCNotificationRequest *)notificationRequestAtIndexPath:(NSIndexPath *)indexPath {
+	// HBLogInfo(@"Method #7");
 	NSUInteger maxCount = [self.sections count];
 	if ([indexPath section] < maxCount) {
 		return [self.sections[[indexPath section]] notificationAtIndex:[indexPath row]];
@@ -58,6 +91,7 @@ static NSMutableArray *notifSections;
 
 %new
 - (NSIndexPath *)indexPathForNotificationRequest:(NCNotificationRequest *)request {
+	// HBLogInfo(@"Method #8");
 	NSUInteger maxCount = [self.sections count];
 	for (NSUInteger x = 0; x < maxCount; x++) {
 		ITXNotificationsSection *section = self.sections[x];
@@ -71,6 +105,7 @@ static NSMutableArray *notifSections;
 
 %new
 - (ITXNotificationsSection *)existingSectionForRequest:(NCNotificationRequest *)request {
+	// HBLogInfo(@"Method #9");
 	NSMutableArray *sections = self.sections;
 	for (ITXNotificationsSection *section in sections) {
 		if ([section.identifier isEqualToString:request.sectionIdentifier]) return section;
@@ -80,6 +115,7 @@ static NSMutableArray *notifSections;
 
 %new
 - (ITXNotificationsSection *)newSectionForRequest:(NCNotificationRequest *)request {
+	// HBLogInfo(@"Method #10");
 	ITXNotificationsSection *section = [[ITXNotificationsSection alloc] init];
 	section.title = request.content.header;
 	section.identifier = request.sectionIdentifier;
@@ -88,6 +124,7 @@ static NSMutableArray *notifSections;
 }
 
 - (NCNotificationRequest *)requestAtIndex:(NSUInteger)index {
+	// HBLogInfo(@"Method #11");
 	NSUInteger maxCount = [self.sections count];
 	if (maxCount > 0) {
 		NSUInteger count = 0;
@@ -104,6 +141,7 @@ static NSMutableArray *notifSections;
 }
 
 - (NSUInteger)_indexOfRequestMatchingNotificationRequest:(NCNotificationRequest *)request {
+	// HBLogInfo(@"Method #12");
 	NSUInteger count = [self.sections count];
 	for (NSUInteger x = 0; x < count; x++) {
 		ITXNotificationsSection *section = self.sections[x];
@@ -117,6 +155,7 @@ static NSMutableArray *notifSections;
 
 %new
 - (NSUInteger)countOfNotificationsInSectionsBeforeSection:(NSUInteger)section {
+	// HBLogInfo(@"Method #13");
 	NSUInteger count = 0;
 	NSUInteger sectionCount = [self.sections count];
 	for (NSUInteger x = section - 1; x > -1; x--) {
@@ -129,7 +168,10 @@ static NSMutableArray *notifSections;
 
 %new
 - (NSIndexPath *)itx_removeNotificationRequest:(NCNotificationRequest *)request {
+	// HBLogInfo(@"Method #14");
 	NSUInteger maxCount = [self.sections count];
+	NSIndexPath *pathToReturn = nil;
+	ITXNotificationsSection *sectionToRemove = nil;
 	for (NSUInteger x = 0; x < maxCount; x++) {
 		ITXNotificationsSection *section = self.sections[x];
 		NSUInteger index = [section indexOfNotification:request];
@@ -137,31 +179,43 @@ static NSMutableArray *notifSections;
 			[section removeNotificationRequest:request];
 			if ([section count] < 1) {
 				[self.sections removeObject:section];
+				sectionToRemove = section;
 			}
-			return [NSIndexPath indexPathForRow:index inSection:x];
+			pathToReturn = [NSIndexPath indexPathForRow:index inSection:x];
+			break;
 			//return [self countOfNotificationsInSectionsBeforeSection:x] + index;
 		}
 	}
+
+	if (sectionToRemove) {
+		[self.sections removeObject:sectionToRemove];
+	}
+	[self recomputeCount];
+	if (pathToReturn) return pathToReturn;
 	return nil;
 }
 
 %new
 - (NSIndexPath *)itx_modifyNotificationRequest:(NCNotificationRequest *)request {
+	// HBLogInfo(@"Method #15");
 	NSUInteger maxCount = [self.sections count];
 	for (NSUInteger x = 0; x < maxCount; x++) {
 		ITXNotificationsSection *section = self.sections[x];
 		NSUInteger index = [section indexOfNotification:request];
 		if (index != NSNotFound) {
 			[section modifyNotificationRequest:request];
+			[self recomputeCount];
 			return [NSIndexPath indexPathForRow:index inSection:x];
 			//return [self countOfNotificationsInSectionsBeforeSection:x] + index;
 		}
 	}
+	[self recomputeCount];
 	return nil;
 }
 
 %new
 -(NSIndexPath *)itx_insertNotificationRequest:(NCNotificationRequest *)request {
+	// HBLogInfo(@"Method #16");
 	ITXNotificationsSection *section = [self existingSectionForRequest:request];
 	if (section) {
 		NSUInteger index = [self.sections indexOfObject:section];
@@ -181,12 +235,14 @@ static NSMutableArray *notifSections;
 	[self.sections insertObject:section atIndex:0];
 
 	[ITXHelper setIcon:request.content.icon forIdentifier:request.sectionIdentifier];
+	[self recomputeCount];
 	return [NSIndexPath indexPathForRow:index inSection:0];
 	//return [self countOfNotificationsInSectionsBeforeSection:x] + index;
 }
 
 %new
 - (BOOL)containsNotificationRequest:(NCNotificationRequest *)request {
+	// HBLogInfo(@"Method #17");
 	NSMutableArray *sections = self.sections;
 	for (ITXNotificationsSection *section in sections) {
 		if ([section indexOfNotification:request] != NSNotFound) {
@@ -197,6 +253,7 @@ static NSMutableArray *notifSections;
 }
 
 - (NSMutableOrderedSet *)requests {
+	// HBLogInfo(@"Method #18");
 	NSMutableOrderedSet *requests = [NSMutableOrderedSet new];
 	NSMutableArray *sections = self.sections;
 	for (ITXNotificationsSection *section in sections) {
@@ -206,28 +263,75 @@ static NSMutableArray *notifSections;
 }
 
 - (NSUInteger)count {
-	NSUInteger count = 0;
-	NSMutableArray *sections = self.sections;
-	for (ITXNotificationsSection *section in sections) {
-		count += [section count];
-	}
-	return count;
-}
-
-- (id)_clearRequestsWithPersistence:(NSUInteger)persistance {
-	return [NSMutableArray new];
+	// HBLogInfo(@"Method #19");
+	return cachedCount;
 }
 
 - (id)clearNonPersistentRequests {
-	return [NSMutableArray new];
+	// HBLogInfo(@"Method #20");
+	return %orig;
 }
 
-- (id)clearRequestsPassingTest:(/*^block*/ id)arg1 {
-	return [NSMutableArray new];
+- (NSMutableSet *)clearRequestsPassingTest:(/*^block*/ id)arg1 {
+	// HBLogInfo(@"Method #21");
+	NSMutableSet *cleared = %orig;
+	//NSMutableArray *removedPaths = [NSMutableArray new];
+
+	// for (NCNotificationRequest *request in cleared) {
+	// 	NSIndexPath *path = [self itx_removeNotificationRequest:request];
+	// 	if (path) [removedPaths addObject:path];
+	// }
+
+
+	// HBLogInfo(@"Clearing Notifications Passing Test");
+	[self recomputeCount];
+	// for (NSIndexPath *path in removedPaths) {
+	// 	// HBLogInfo(@"Removed Index with Test: %@", path);
+	// }
+	// if (self.controller) {
+	// 	[self.controller.collectionView reloadData];
+	// }
+	return cleared;
+}
+
+- (NSMutableSet *)_clearRequestsWithPersistence:(NSUInteger)persistance {
+	// HBLogInfo(@"Method #22");
+	NSMutableSet *removed = [NSMutableSet new];
+	NSMutableArray *sections = self.sections;
+	for (ITXNotificationsSection *section in sections) {
+		NSMutableArray *notifications = [section.notifications mutableCopy];
+		for (NCNotificationRequest *request in notifications) {
+			if (request.options && request.options.lockScreenPersistence == persistance) {
+				[removed addObject:request];
+				//[section removeNotificationRequest:request];
+			}
+		}
+	}
+
+	// NSMutableArray *newSections = [NSMutableArray new];
+
+	// for (ITXNotificationsSection *section in sections) {
+	// 	if ([section count] > 0) {
+	// 		[newSections addObject:section];
+	// 	} else {
+
+	// 	}
+	// }
+
+	// self.sections = newSections;
+
+	// HBLogInfo(@"Clearing Notifications with Persistance");
+
+	// if (self.controller) {
+	// 	[self.controller.collectionView reloadData];
+	// }
+	[self recomputeCount];
+	return removed;
 }
 
 %new
 - (NSString *)titleForSectionIndex:(NSUInteger)section {
+	// HBLogInfo(@"Method #23");
 	if (section < [self.sections count]) {
 		NSString *title = [self.sections[section] title];
 		NSString *identifier = [self.sections[section] identifier];
@@ -238,6 +342,7 @@ static NSMutableArray *notifSections;
 
 %new
 - (NSString *)identifierForSectionIndex:(NSUInteger)section {
+	// HBLogInfo(@"Method #24");
 	if (section < [self.sections count]) {
 		return [self.sections[section] identifier];
 	}

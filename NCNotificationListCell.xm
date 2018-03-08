@@ -15,19 +15,23 @@
 %property (nonatomic, retain) UIView *cellOver;
 %property (nonatomic, retain) UIView *cellUnder;
 %property (nonatomic, retain) MTMaterialView *origBackgroundView;
+%property (nonatomic, retain) CGRect previousBounds;
 
 %new
 - (ITXNCGroupBackgroundView *)sectionBackgroundView {
+	// HBLogInfo(@"Method #75");
 	return [self.collectionView _visibleSupplementaryViewOfKind:[ITXNCGroupBackgroundView elementKind] atIndexPath:[NSIndexPath indexPathForRow:0 inSection:[[self.collectionView indexPathForCell:self] section]]];
 }
 
 %new
 - (BOOL)isLastInSection {
+	// HBLogInfo(@"Method #76");
 	return self._isLastInSection;
 }
 
 %new
 - (void)setIsLastInSection:(BOOL)isLast {
+	// HBLogInfo(@"Method #77");
 	if (self.itxBackgroundView) {
 	//if (isLast != self._isLastInSection) {
 		self._isLastInSection = isLast;
@@ -49,6 +53,7 @@
 
 - (void)updateCellForContentViewController:(id)controller {
 	%orig;
+	// HBLogInfo(@"Method #78");
 
 	if (!self.itxBackgroundView) {
 
@@ -59,7 +64,7 @@
 
 
 
-		if (self.origBackgroundView) {
+		if (self.origBackgroundView && !self.itxBackgroundView) {
 			//self.origBackgroundView.clipsToBounds = YES;
 			// self.origBackgroundView 
 			// if (separatorHeight == 0) {
@@ -135,21 +140,23 @@
 
 		[[self.origBackgroundView superview] addSubview:self.separatorView];
 	}
-	if (self.contentViewController && self.contentViewController.view && self.contentViewController.view.contentView) {
-		if ([self.contentViewController.view.contentView valueForKey:@"_mainOverlayView"]) {
-			MTMaterialView *overlayView = [self.contentViewController.view.contentView valueForKey:@"_mainOverlayView"];
-			//overlayView._continuousCornerRadius = 0;
-			overlayView.hidden = YES;
-			overlayView.alpha = 0;
-		}
-	}
-
+	// if (self.contentViewController && self.contentViewController.view && self.contentViewController.view.contentView) {
+	// 	if ([self.contentViewController.view.contentView valueForKey:@"_mainOverlayView"]) {
+	// 		MTMaterialView *overlayView = [self.contentViewController.view.contentView valueForKey:@"_mainOverlayView"];
+	// 		//overlayView._continuousCornerRadius = 0;
+	// 		overlayView.hidden = YES;
+	// 		overlayView.alpha = 0;
+	// 	}
+	// }
+	[self doITXStuff];
 	[self layoutSubviews];
 
 }
 
 -(void)_updateRevealForActionButtonsClippingRevealView:(id)clippingView actionButtonsView:(id)buttonsView forRevealPercentage:(CGFloat)percentage actionButtonsViewNeedsClipping:(BOOL)needsClipping {
 	%orig;
+	// HBLogInfo(@"Method #79");
+	//return;
 	if (self.contentViewController && self.contentViewController.view) {
 		UIView *offsetCalcView = self.contentViewController.view;
 		CGFloat percentComplete = fmaxf(fminf(fabs(offsetCalcView.frame.origin.x)/(13*0.8), 1.0), 0.0);
@@ -203,13 +210,13 @@
 		if (percentComplete > 0.01) {
 			self.itxBackgroundView.hidden = NO;
 			sectionBackground.middleFrame = [[sectionBackground superview] convertRect:self.frame toView:sectionBackground];
-			[self.itxBackgroundView layoutSubviews];
-			[sectionBackground layoutSubviews];
+			[self.itxBackgroundView doConfigUpdate];
+			[sectionBackground doConfigUpdate];
 		} else {
 			sectionBackground.middleFrame = CGRectNull;
 			self.itxBackgroundView.hidden = YES;
-			[self.itxBackgroundView layoutSubviews];
-			[sectionBackground layoutSubviews];
+			[self.itxBackgroundView doConfigUpdate];
+			[sectionBackground doConfigUpdate];
 		}
 		// }
 		//}
@@ -223,10 +230,12 @@
 
 - (void)setContentViewController:(id)thing {
 	%orig;
+	// HBLogInfo(@"Method #80");
 	[self layoutSubviews];
 }
 
 - (UICollectionViewLayoutAttributes *)preferredLayoutAttributesFittingAttributes:(UICollectionViewLayoutAttributes *)attributes {
+	// HBLogInfo(@"Method #81");
 	// if (attributes.size.height < 1) {
 	// 	attributes.alpha = 0;
 	// }
@@ -239,6 +248,7 @@
 }
 
 - (void)_setLayoutAttributes:(UICollectionViewLayoutAttributes *)attributes {
+	// HBLogInfo(@"Method #82");
 	//attributes.alpha = 1.0;
 	// if (attributes.frame.size.height == 1) {
 	// 	attributes.transform = CGAffineTransformMakeScale(1, 0);
@@ -248,8 +258,18 @@
 	%orig(attributes);
 }
 
+- (void)setFrame:(CGRect)frame {
+	%orig;
+	[self doITXStuff];
+}
+
+- (void)setBounds:(CGRect)bounds {
+	%orig;
+	[self doITXStuff];
+}
 
 - (void)applyLayoutAttributes:(UICollectionViewLayoutAttributes *)attributes {
+	// HBLogInfo(@"Method #83");
 	CGRect frame = attributes.frame;
 	frame.origin.x = 8;
 	attributes.frame = frame;
@@ -272,12 +292,14 @@
 }
 
 - (void)setConfigured:(BOOL)configed {
+	// HBLogInfo(@"Method #84");
 	%orig;
 	[self layoutSubviews];
 }
 
-- (void)layoutSubviews {
-	%orig;
+%new
+- (void)doITXStuff {
+	// HBLogInfo(@"Method #200");
 	if (self.contentViewController && self.contentViewController.view && self.contentViewController.view.contentView) {
 		CGFloat inset = 15.0;
 		CGRect backgroundFrame = self.bounds;
@@ -327,12 +349,29 @@
 	}
 }
 
+- (void)layoutSubviews {
+	// HBLogInfo(@"Method #85");
+	//if ([self needsLayout]) {
+		%orig;
+	//}
+}
+
+- (void)_layoutContentView {
+	CGRect frame = self.contentViewController.view.frame;
+	CGRect bounds = self.bounds;
+	if (frame.size.height != bounds.size.height || bounds.size.height != frame.size.height) {
+		%orig;
+	}
+}
+
 - (void)prepareForReuse {
+	// HBLogInfo(@"Method #86");
 	if (self.itxBackgroundView) {
 		ITXNCGroupBackgroundConfiguration *configuration = self.itxBackgroundView.configuration;
 		configuration.topRadius = 0;
 		configuration.bottomRadius = 0;
 		[self.itxBackgroundView layoutSubviews];
+		[self.itxBackgroundView doConfigUpdate];
 		// [self.itxBackgroundView removeFromSuperview];
 		// self.itxBackgroundView = nil;
 	}

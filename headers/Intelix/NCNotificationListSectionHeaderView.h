@@ -13,6 +13,7 @@
 @property (nonatomic, retain) ITXNCGroupFooterView *footerView;
 
 @property (nonatomic, retain) id delegate;
+@property (nonatomic, assign) BOOL isTopSection;
 
 - (ITXNCGroupBackgroundView *)sectionBackgroundView;
 - (ITXNCGroupFooterView *)sectionFooterView;

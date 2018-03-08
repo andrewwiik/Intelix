@@ -14,11 +14,13 @@ static NSMutableDictionary *iconsToDict;
 }
 
 + (UIImage *)iconForIdentifier:(NSString *)identifier {
+	// HBLogInfo(@"Method #102");
 	if (!iconsToDict) return nil;
 	else return [iconsToDict objectForKey:identifier];
 }
 
 + (void)setIcon:(UIImage *)icon forIdentifier:(NSString *)identifier {
+	// HBLogInfo(@"Method #103");
 	if (!iconsToDict) iconsToDict = [NSMutableDictionary new];
 	if (icon) {
 		[iconsToDict setObject:icon forKey:identifier];
