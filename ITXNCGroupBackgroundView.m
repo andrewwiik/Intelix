@@ -90,7 +90,7 @@ static CGFloat headerHeight = 20;
 	//CGRect forcedFrame = _forcedFrame;
 	//self.frame = _forcedFrame;
 
-	if (_previousFrame.size.width != self.frame.size.width || _previousFrame.size.height != self.frame.size.height) {
+	if (_previousFrame.size.width != self.frame.size.width || _previousFrame.size.height != self.frame.size.height || _backdropView.bounds.size.height != self.frame.size.height) {
 
 		[self doConfigUpdate];
 	}

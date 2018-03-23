@@ -38,4 +38,9 @@
 	return;
 	//%orig;
 }
+
+-(void)reloadSections:(NSArray<NSIndexPath *> *)sections {
+	[self reloadData];
+	return;
+} 
 %end

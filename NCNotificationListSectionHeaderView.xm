@@ -188,8 +188,8 @@
 	%orig;
 	self.footerView = nil;
 	self.sectionBackground = nil;
-	self.alpha= 1.0;
-	self.hidden = NO;
+	//self.alpha= 1.0;
+	//self.hidden = NO;
 	self.isTopSection = NO;
 	if (self.headerContainerView) {
 		self.headerContainerView.icon = nil;

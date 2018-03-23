@@ -91,23 +91,43 @@
 
 - (UICollectionViewLayoutAttributes *)layoutAttributesForSupplementaryViewOfKind:(NSString *)elementKind atIndexPath:(NSIndexPath *)indexPath {
 	// HBLogInfo(@"Method #96");
-	if (elementKind && [elementKind isEqualToString:UICollectionElementKindSectionHeader] && [indexPath section] == 0) {
-		UICollectionViewLayoutAttributes *attributes = [self layoutAttributesForSupplementaryViewOfKind:UICollectionElementKindSectionHeader atIndexPath:[NSIndexPath indexPathForRow:0 inSection:1]];
-		if (attributes) {
-			[attributes setValue:indexPath forKey:@"_indexPath"];
-			CGRect frame = attributes.frame;
-			frame.origin.y = 0;
-			attributes.frame = frame;
-			if ([indexPath section] > [self priorityEndSection]) {
-				// attributes.alpha = 1.0;
-				// attributes.hidden = NO;
-			//	attributes.alpha = self.showingNotificationsHistory ? 1.0 : 0.0;
-				//attributes.hidden = self.showingNotificationsHistory ? NO : YES;
-			} else {
-				attributes.alpha = 1.0;
-				attributes.hidden = NO;
+	if (elementKind && [elementKind isEqualToString:UICollectionElementKindSectionHeader]) {
+		if ([indexPath section] == 0) {
+			UICollectionViewLayoutAttributes *attributes = [self layoutAttributesForSupplementaryViewOfKind:UICollectionElementKindSectionHeader atIndexPath:[NSIndexPath indexPathForRow:0 inSection:1]];
+			if (attributes) {
+				[attributes setValue:indexPath forKey:@"_indexPath"];
+				CGRect frame = attributes.frame;
+				frame.origin.y = 0;
+				attributes.frame = frame;
+				if ([indexPath section] > [self priorityEndSection]) {
+					// attributes.alpha = 1.0;
+					// attributes.hidden = NO;
+				//	attributes.alpha = self.showingNotificationsHistory ? 1.0 : 0.0;
+					//attributes.hidden = self.showingNotificationsHistory ? NO : YES;
+				} else {
+					attributes.alpha = 1.0;
+					attributes.hidden = NO;
+				}
+				return attributes;
 			}
-			return attributes;
+		} else {
+			UICollectionViewLayoutAttributes *attributes = %orig;
+			if (attributes) {
+				//[attributes setValue:indexPath forKey:@"_indexPath"];
+				// CGRect frame = attributes.frame;
+				// frame.origin.y = 0;
+				// attributes.frame = frame;
+				if ([indexPath section] > [self priorityEndSection]) {
+					// attributes.alpha = 1.0;
+					// attributes.hidden = NO;
+					attributes.alpha = self.showingNotificationsHistory ? 1.0 : 0.0;
+					attributes.hidden = !self.showingNotificationsHistory;
+				} else {
+					attributes.alpha = 1.0;
+					attributes.hidden = NO;
+				}
+				return attributes;
+			}
 		}
 	} else {
 		// if (elementKind && [elementKind isEqualToString:UICollectionElementKindSectionHeader]) {
@@ -146,7 +166,7 @@
 				// attributes.alpha = 1.0;
 				// attributes.hidden = NO;
 				attributes.alpha = self.showingNotificationsHistory ? 1.0 : 0.0;
-				//attributes.hidden = self.showingNotificationsHistory ? NO : YES;
+				attributes.hidden = !self.showingNotificationsHistory;
 			} else {
 				attributes.alpha = 1.0;
 				attributes.hidden = NO;

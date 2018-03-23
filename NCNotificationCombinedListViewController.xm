@@ -82,12 +82,13 @@
 		// 	view.alpha = 1.0;
 		// 	view.hidden = NO;
 		// }
-	} else if (kind && [kind isEqualToString:@"UICollectionElementKindSectionHeader"]) {
+	} else if (kind && [kind isEqualToString:UICollectionElementKindSectionHeader]) {
 		NCNotificationListSectionHeaderView *headerView = (NCNotificationListSectionHeaderView *)view;
 		if ([indexPath section] > [self.notificationPriorityList sectionCount] - 1) {
 			headerView.hidden = !self.showingNotificationsHistory;
 			headerView.isTopSection = NO;
 			if (!self.showingNotificationsHistory) {
+				headerView.overrideAlpha = 0;
 				headerView.alpha = 0;
 			}
 		} else {
@@ -148,15 +149,20 @@
 	// return %orig;
 	// HBLogInfo(@"Method #29");
 
-	if (kind && [kind isEqualToString:@"UICollectionElementKindSectionHeader"]) {
+	if (kind && [kind isEqualToString:UICollectionElementKindSectionHeader]) {
 		if ([self.collectionView numberOfItemsInSection:[indexPath section]] > 0) {
 			NCNotificationListSectionHeaderView *headerView = [collectionView dequeueReusableSupplementaryViewOfKind:kind withReuseIdentifier:@"NotificationListSectionHeaderReuseIdentifier" forIndexPath:indexPath];
 			headerView.delegate = self;
 			if ([indexPath section] > [self.notificationPriorityList sectionCount] - 1) {
 				headerView.overrideAlpha = self.showingNotificationsHistory ? 1.0 : 0.0;
 				headerView.isTopSection = NO;
+				//if (self.showingNotificationsHistory) headerView.backgroundColor = [UIColor redColor];
+				//else headerView.backgroundColor = [UIColor greenColor];
+				if (!self.showingNotificationsHistory) headerView.alpha = 0;
+				headerView.hidden = !self.showingNotificationsHistory;
 				[headerView setTitle:[self.sectionList titleForSectionIndex:[self _adjustedSectionIndexForListOperation:[indexPath section]]] forSectionIdentifier:[self.sectionList identifierForSectionIndex:[self _adjustedSectionIndexForListOperation:[indexPath section]]]];
 			} else {
+				//headerView.backgroundColor = [UIColor blueColor];
 				headerView.overrideAlpha = 1.0;
 				headerView.alpha = 1.0;
 				headerView.hidden = NO;
