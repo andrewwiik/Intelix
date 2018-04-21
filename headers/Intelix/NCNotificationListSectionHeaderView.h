@@ -17,4 +17,11 @@
 
 - (ITXNCGroupBackgroundView *)sectionBackgroundView;
 - (ITXNCGroupFooterView *)sectionFooterView;
+
+// Clear All Stuff
+
+@property (nonatomic, retain) NSIndexPath *indexPath;
+
+// ColorBanners2 Support
+- (void)cbr_setColoringInfo:(id)info;
 @end

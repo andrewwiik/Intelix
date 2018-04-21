@@ -26,4 +26,7 @@
 - (NSString *)identifierForSectionIndex:(NSUInteger)section;
 
 - (void)recomputeCount;
+
+// Clear All
+- (void)clearNotificationsInSection:(NSUInteger)section;
 @end

@@ -17,4 +17,7 @@
 @property (assign, nonatomic, readwrite) CGFloat overrideAlpha;                                                     //@synthesize overrideAlpha=_overrideAlpha - In the implementation block
 @property (assign, nonatomic, readwrite) CGPoint overrideCenter;
 - (void)_resetRevealOverrides;  
+
+// ColorBanners
+- (void)setTextColor:(UIColor *)color;
 @end

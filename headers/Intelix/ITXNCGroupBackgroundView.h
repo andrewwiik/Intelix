@@ -5,6 +5,7 @@
 @interface ITXNCGroupBackgroundView : UICollectionReusableView {
 	CGRect _previousFrame;
 	CGRect _previousMiddleFrame;
+	id _coloringInfo;
 }
 @property (nonatomic, assign, readwrite) CGRect middleFrame;
 @property (nonatomic, assign, readwrite) CGRect forcedFrame;
@@ -25,4 +26,7 @@
 - (void)_resetRevealOverrides;  
 
 - (void)doConfigUpdate;
+
+- (void)cbr_setColoringInfo:(id)info;
+- (id)cbr_coloringInfo;
 @end

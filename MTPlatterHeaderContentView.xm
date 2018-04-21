@@ -1,54 +1,44 @@
 #import <Intelix/MTPlatterHeaderContentView.h>
 
 %hook MTPlatterHeaderContentView
-%property (nonatomic, assign) BOOL isIntelixSectionHeader;
+%property (nonatomic, assign) BOOL isInRecentsSection;
+%property (nonatomic, assign) BOOL isInHistorySection;
 - (CGSize)sizeThatFits:(CGSize)size {
-	// HBLogInfo(@"Method #110");
-	if (!self.isIntelixSectionHeader) return %orig;
-	return CGSizeZero;
+	if (self.isInHistorySection) return CGSizeZero;
+	return %orig;
 }
 
 - (BOOL)isHidden {
-	// HBLogInfo(@"Method #111");
-	if (!self.isIntelixSectionHeader) return %orig;
-	return YES;
+	if (self.isInHistorySection) return YES;
+	if (self.isInRecentsSection) return NO;
+	return %orig;
 }
 
 - (void)setIsHidden:(BOOL)isHidden {
-	// HBLogInfo(@"Method #112");
-	%orig(!self.isIntelixSectionHeader ? isHidden : YES);
+	%orig(self.isInHistorySection ? YES : isHidden);
 }
 
 - (CGFloat)alpha {
-	if (!self.isIntelixSectionHeader) return %orig;
-	return 0.0;
+	if (self.isInHistorySection) return 0.0;
+	return %orig;
 }
 
 - (void)setAlpha:(CGFloat)alpha {
-	// HBLogInfo(@"Method #113");
-	if (!self.isIntelixSectionHeader) {
-		%orig;
-		return;
-	}
-	%orig(0.0f);
+	%orig(self.isInHistorySection ? 0.0 : alpha);
 }
 
 - (CGFloat)_headerHeightForWidth:(CGFloat)width {
-	// HBLogInfo(@"Method #114");
-	if (!self.isIntelixSectionHeader) return %orig;
-	return 0.0f;
+	if (self.isInHistorySection) return 0.0;
+	return %orig;
 }
 
 - (CGFloat)contentBaseline {
-	// HBLogInfo(@"Method #115");
-	if (!self.isIntelixSectionHeader) return %orig;
-	return 0;
+	if (self.isInHistorySection) return 0.0;
+	return %orig;
 }
 
 - (void)layoutSubviews {
 	%orig;
-	// HBLogInfo(@"Method #116");
-	//if (!!self.isIntelixSectionHeader) {
-	[self setHidden:!self.isIntelixSectionHeader ? NO : YES];
+	if (self.isInHistorySection || self.isInRecentsSection) [self setHidden:[self isHidden]];
 }
 %end

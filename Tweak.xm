@@ -1,4 +1,5 @@
 #import <Intelix/ITXNCGroupBackgroundView.h>
+#import <Intelix/NCNotificationCombinedListViewController.h>
 
 @interface NCNotificationListCollectionViewFlowLayout : UICollectionViewFlowLayout
 @property (nonatomic,retain) NSMutableArray * insertedIndexPaths;
@@ -6,8 +7,8 @@
 @property (nonatomic,retain) NSMutableArray * replacedIndexPaths;
 @end
 
-@interface NCNotificationCombinedListViewController : UICollectionViewController
-@end
+// @interface NCNotificationCombinedListViewController : UICollectionViewController
+// @end
 
 
 
@@ -63,5 +64,39 @@
 	// HBLogInfo(@"I am Crashing Here #2");
 	return %orig(date);
 	// return %orig;
+}
+%end
+
+@interface SBCoverSheetSlidingViewController : UIViewController
+@property (assign,nonatomic) NSInteger dismissalSlidingMode;   
+@end
+
+@interface SBDashBoardCombinedListViewController : UIViewController
+@end
+
+// %hook SBDashBoardCombinedListViewController
+// - (void)_updatePresentation {
+// 	%orig;
+// 	NCNotificationCombinedListViewController *controller = [self valueForKey:@"_listViewController"];
+// 	if (controller) {
+// 		[controller _resetNotificationsHistory];
+// 		[controller forceNotificationHistoryRevealed:TRUE animated:NO];
+// 	}
+// }
+// %end
+
+// %hook MTMaterialView
+// - (void)cbr_colorize:(id)thing {
+// 	HBLogInfo(@"CBR COLORIZE");
+// 	HBLogInfo(@"%@", thing);
+// 	%orig;
+// }
+// %end
+
+
+%hook SBCoverSheetSlidingViewController
+- (void)_finishTransitionToPresented:(BOOL)arg1 animated:(BOOL)arg2 withCompletion:(id)arg3 {
+	if (self.dismissalSlidingMode != 1 && arg1 == false) return;
+	%orig;
 }
 %end

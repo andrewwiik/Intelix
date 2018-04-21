@@ -230,6 +230,11 @@
 				}
 			}
 		}
+
+		NCNotificationListSection *sectionObj = [self _existingSectionForNotificationRequest:request];
+		NSUInteger index = [self.sections indexOfObject:sectionObj];
+		[self.sections removeObjectAtIndex:index];
+		[self.sections insertObject: sectionObj atIndex:0];
 	}
 
 	id orig = %orig;
@@ -266,5 +271,27 @@
 	}
 	id orig = %orig;
 	return orig;
+}
+
+%new
+- (void)clearNotificationsInSection:(NSUInteger)section {
+	if (section < [self.sections count]) {
+		NCNotificationListSection *sectionObj = [self.sections objectAtIndex:section];
+		NSString *sectionIdentifier = sectionObj.otherSectionIdentifier;
+		NSArray *requests = [sectionObj.notificationRequests copy];
+		if ([self.collapsedSectionIdentifiers containsObject:sectionIdentifier]) {
+			[self.collapsedSectionIdentifiers removeObject:sectionIdentifier];
+		}
+
+		if ([self.expandedSectionIdentifiers containsObject:sectionIdentifier]) {
+			[self.expandedSectionIdentifiers removeObject:sectionIdentifier];
+		}
+		[self.sections removeObjectAtIndex:section];
+		HBLogInfo(@"Clearing Notification Requests: %@", requests);
+		[self.delegate clearNotificationRequests:requests];
+		[self.delegate notificationSectionList:self didRemoveSectionAtIndex:section];
+		//[self.delegate notificationSectionList:self didRemoveSectionsAtIndices:[NSIndexSet indexSetWithIndex:section]];
+	}
+	return;
 }
 %end

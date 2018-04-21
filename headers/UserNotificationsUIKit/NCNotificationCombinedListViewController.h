@@ -1,12 +1,17 @@
 #import "NCNotificationChronologicalList.h"
 #import <UserNotificationsKit/NCNotificationRequest.h>
 #import "NCNotificationPriorityList.h"
+#import <UserNotificationsKit/NCNotificationListViewControllerDestinationDelegate-Protocol.h>
+#import <SpringBoard/SBDashBoardCombinedListViewController.h>
+#import <UserNotificationsUIKit/NCNotificationViewController.h>
 
 @interface NCNotificationCombinedListViewController : UICollectionViewController
+@property (nonatomic,retain) SBDashBoardCombinedListViewController *destinationDelegate; 
 @property (assign,getter=isShowingNotificationsHistory,nonatomic) BOOL showingNotificationsHistory; 
 @property (nonatomic,retain) NCNotificationPriorityList *notificationPriorityList;
 - (BOOL)_isNotificationRequestForLockScreenNotificationDestination:(NCNotificationRequest *)request;
 @property (nonatomic, readonly) NCNotificationChronologicalList *sectionList;
+@property (assign,nonatomic) BOOL notificationHistorySectionNeedsReload;
 
 - (NSIndexPath *)_adjustedSectionIndexPathForCollectionViewOperation:(NSIndexPath *)originalPath;
 - (NSIndexPath *)_adjustedSectionIndexPathForListOperation:(NSIndexPath *)originalPath;
@@ -38,4 +43,16 @@
 
 - (NSMutableArray<NSIndexPath *> *)_filteredIndexPathsForAnimationFromIndexPaths:(NSArray<NSIndexPath *> *)indexPaths;
 - (BOOL)isShowingNotificationsHistory;
+
+-(void)notificationSectionList:(id)list didInsertSectionAtIndex:(NSUInteger)section;
+-(void)notificationSectionList:(id)list didRemoveSectionAtIndex:(NSUInteger)section;
+
+- (void)_setShowingNotificationsHistory:(BOOL)showing animated:(BOOL)animated;
+- (void)_reloadNotificationHistorySectionIfNecessary;
+
+- (void)_resetNotificationsHistory;
+
+- (void)_removeCachedSizesForNotificationRequest:(NCNotificationRequest *)request;
+
+- (NCNotificationViewController *)viewControllerPresentingLongLook;
 @end

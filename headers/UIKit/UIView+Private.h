@@ -10,4 +10,5 @@
 - (void)nc_removeAllVibrantStyling;
 - (CCUIControlCenterPagePlatterView *)ccuiPunchOutMaskedContainer;
 - (BOOL)_shouldAnimatePropertyWithKey:(NSString *)key;
+- (UIViewController *)_viewControllerForAncestor;
 @end

@@ -1,5 +1,11 @@
 #import <Intelix/ITXNCGroupBackgroundView.h>
-
+#import <UIKit/UICollectionView+Private.h>
+#import <UIKit/UICollectionReusableView+Private.h>
+#import <Intelix/NCNotificationListCell.h>
+#import <ColorBanners2/CBRColoringInfo.h>
+#import <Intelix/ITXNCGroupFooterView.h>
+#import <Intelix/NCNotificationShortLookView.h>
+#import <Intelix/NCNotificationListSectionHeaderView.h>
 static CGFloat headerHeight = 20;
 
 @implementation ITXNCGroupBackgroundView
@@ -78,6 +84,58 @@ static CGFloat headerHeight = 20;
 	[_topView layoutSubviews];
 	[_bottomView layoutSubviews];
 	_previousFrame = self.frame;
+
+	if (NSClassFromString(@"CBRPrefsManager") && NSClassFromString(@"CBRColoringInfo")) {
+
+		if ([self superview] && [[self superview] isKindOfClass:NSClassFromString(@"NCNotificationShortLookView")]) {
+			NCNotificationShortLookView *shortLookView = (NCNotificationShortLookView *)[self superview];
+			id coloringInfo = [shortLookView cbr_coloringInfo];
+			if (coloringInfo) [self cbr_setColoringInfo:coloringInfo];
+			if (_coloringInfo) {
+				if (_backdropView && [_backdropView respondsToSelector:@selector(cbr_colorize:)]) {
+					[_backdropView cbr_colorize:_coloringInfo];
+				}
+			}
+		} else {
+			UICollectionView *collectionView = self.collectionView;
+			UICollectionViewLayoutAttributes *layoutAttributes = self.layoutAttributes;
+			if (layoutAttributes && collectionView) {
+				NSIndexPath *path = layoutAttributes.indexPath;
+				if (path) {
+					NCNotificationListCell *cell = [collectionView _visibleCellForIndexPath:path];
+					if (cell) {
+						id coloringInfo = [cell cbr_coloringInfo];
+						if (coloringInfo) {
+							[self cbr_setColoringInfo:coloringInfo];
+							CBRColoringInfo *info = (CBRColoringInfo *)_coloringInfo;
+							ITXNCGroupFooterView *footerView = [collectionView _visibleSupplementaryViewOfKind:@"UICollectionElementKindSectionFooter" atIndexPath:path];
+							if (footerView && [footerView isKindOfClass:NSClassFromString(@"ITXNCGroupFooterView")]) {
+								[footerView setTextColor:info.contrastColorForLookType];
+							}
+
+							NCNotificationListSectionHeaderView *headerView = [collectionView _visibleSupplementaryViewOfKind:@"UICollectionElementKindSectionHeader" atIndexPath:path];
+							if (headerView && [headerView isKindOfClass:NSClassFromString(@"NCNotificationListSectionHeaderView")]) {
+								[headerView cbr_setColoringInfo:_coloringInfo];
+							}
+
+							if (_backdropView && [_backdropView respondsToSelector:@selector(cbr_colorize:)]) {
+								[_backdropView cbr_colorize:_coloringInfo];
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// if (_coloringInfo) {
+		// 	CBRColoringInfo *info = (CBRColoringInfo *)_coloringInfo;
+
+		// }
+
+		// if (_coloringInfo) {
+		// 	[self cbr_colorize]
+		// }
+	}
 }
 
 - (void)layoutSubviews {
@@ -139,5 +197,13 @@ static CGFloat headerHeight = 20;
 			[self setCenter:_overrideCenter];
 		}
 	}
+}
+
+- (void)cbr_setColoringInfo:(id)info {
+	_coloringInfo = info;
+}
+
+- (id)cbr_coloringInfo {
+	return _coloringInfo;
 }
 @end

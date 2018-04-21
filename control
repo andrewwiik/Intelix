@@ -1,10 +1,10 @@
-Package: com.ioscreatix.intelix
-Name: Intelix
+Package: com.ioscreatix.intelixbeta
+Name: Intelix (Beta)
 Depends: mobilesubstrate
-Version: 1.1.6
+Version: 1.3.3
 Architecture: iphoneos-arm
-Description: Grouped Notifications on iOS 11
+Description: Grouped Notifications on iOS 11 (Beta)
 Maintainer: iOS Creatix
 Author: iOS Creatix
 Section: Tweaks
-Conflicts: it.dreamcode.picobanners2, com.cpdigitaldarkroom.fastunlockx
+Replaces: com.ioscreatix.intelix

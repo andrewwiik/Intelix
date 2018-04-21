@@ -10,4 +10,7 @@
 - (void)toggleExpansionForSectionIdentifier:(NSString *)sectionIdentifier;
 - (BOOL)sectionHasFooter:(NSUInteger)sectionIndex;
 - (NSUInteger)sectionIndexForOtherSectionIdentifier:(NSString *)otherSectionIdentifier;
+
+// Clear All
+- (void)clearNotificationsInSection:(NSUInteger)section;
 @end

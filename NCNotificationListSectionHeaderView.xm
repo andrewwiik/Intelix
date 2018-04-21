@@ -4,6 +4,7 @@
 #import <Intelix/ITXNCGroupFooterView.h>
 #import <UIKit/UICollectionReusableView+Private.h>
 #import <UIKit/UICollectionView+Private.h>
+#import <Intelix/NCNotificationCombinedListViewController.h>
 
 %hook NCNotificationListSectionHeaderView
 %property (nonatomic, retain) MTPlatterHeaderContentView *headerContainerView;
@@ -12,6 +13,7 @@
 %property (nonatomic, retain) ITXNCGroupBackgroundView *sectionBackground;
 %property (nonatomic, retain) ITXNCGroupFooterView *footerView;
 %property (nonatomic, assign) BOOL isTopSection;
+%property (nonatomic, retain) NSIndexPath *indexPath;
 
 - (void)setAlpha:(CGFloat)alpha {
 	%orig;
@@ -28,7 +30,7 @@
 	if (self.sectionBackground) return self.sectionBackground;
 	else {
 		if (self.collectionView) {
-			self.sectionBackground = (ITXNCGroupBackgroundView * )[self.collectionView _visibleSupplementaryViewOfKind:[ITXNCGroupBackgroundView elementKind] atIndexPath:[NSIndexPath indexPathForRow:0 inSection:[[self.collectionView indexPathForSupplementaryView:self] section]]];
+			self.sectionBackground = (ITXNCGroupBackgroundView * )[self.collectionView _visibleSupplementaryViewOfKind:[ITXNCGroupBackgroundView elementKind] atIndexPath:self.layoutAttributes.indexPath];
 		}
 	}
 	return self.sectionBackground;
@@ -41,7 +43,7 @@
 	if (self.footerView) return self.footerView;
 	else {
 		if (self.collectionView) {
-			self.footerView = (ITXNCGroupFooterView * )[self.collectionView _visibleSupplementaryViewOfKind:@"UICollectionElementKindSectionFooter" atIndexPath:[NSIndexPath indexPathForRow:0 inSection:[[self.collectionView indexPathForSupplementaryView:self] section]]];
+			self.footerView = (ITXNCGroupFooterView * )[self.collectionView _visibleSupplementaryViewOfKind:@"UICollectionElementKindSectionFooter" atIndexPath:self.layoutAttributes.indexPath];
 		}
 	}
 	return self.footerView;
@@ -77,9 +79,30 @@
 
 	if (self.headerContainerView) {
 		CGFloat inset = 8;
+		if (self.headerContainerView.utilityButton) {
+
+			[self.headerContainerView.utilityButton removeTarget:nil 
+										                  action:NULL 
+										        forControlEvents:UIControlEventAllEvents];
+
+			[self.headerContainerView.utilityButton addTarget:self 
+			           action:@selector(clearAllPressed:)
+			 forControlEvents:UIControlEventTouchUpInside];
+			[self.headerContainerView.utilityButton setTitle: @"Clear All" forState:UIControlStateNormal];
+		}
 		CGFloat headerContainerHeight = [self.headerContainerView sizeThatFits:self.bounds.size].height;
 		self.headerContainerView.frame = CGRectMake(8, self.bounds.size.height - headerContainerHeight, self.bounds.size.width - (8*2), headerContainerHeight);
 		self.separatorView.frame = CGRectMake(inset, self.bounds.size.height - [ITXHelper seperatorHeight], self.bounds.size.width - (inset*2), [ITXHelper seperatorHeight]);
+	}
+}
+
+%new
+- (void)clearAllPressed:(id)stuff {
+	if (self.delegate && self.indexPath) {
+		NCNotificationCombinedListViewController *delegate = (NCNotificationCombinedListViewController *)[self valueForKey:@"_delegate"];
+		if (delegate && [delegate isKindOfClass:NSClassFromString(@"NCNotificationCombinedListViewController")]) {
+			[delegate clearNotificationsInSection:[self.indexPath section]];
+		}
 	}
 }
 
@@ -199,6 +222,14 @@
 	if (self.headerContainerView) {
 		self.headerContainerView.title = @"";
 		self.headerContainerView.icon = nil;
+	}
+}
+
+%new
+- (void)cbr_setColoringInfo:(id)info {
+	if (self.headerContainerView) {
+		[self.headerContainerView cbr_setColoringInfo:info];
+		[self.headerContainerView cbr_colorize:[self.headerContainerView cbr_coloringInfo]];
 	}
 }
 %end

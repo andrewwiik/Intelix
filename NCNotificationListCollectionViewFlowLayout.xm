@@ -17,10 +17,10 @@
 	return 0;
 }
 
-- (CGFloat)minimumInteritemSpacing {
-	// HBLogInfo(@"Method #91");
-	return 0;
-}
+// - (CGFloat)minimumInteritemSpacing {
+// 	// HBLogInfo(@"Method #91");
+// 	return 0;
+// }
 
 - (id)_animationForReusableView:(id)view toLayoutAttributes:(id)attributes type:(NSUInteger)type {
 	// HBLogInfo(@"Method #92");
@@ -30,6 +30,7 @@
 %new
 - (NSUInteger)priorityEndSection {
 	// HBLogInfo(@"Method #93");
+	return 0;
 	NCNotificationCombinedListViewController *controller = (NCNotificationCombinedListViewController *)[self.collectionView valueForKey:@"_delegate"];
 	return [controller.notificationPriorityList sectionCount] - 1;
 }
@@ -70,7 +71,7 @@
     }
 
  	for (NSInteger section = range.location; section < NSMaxRange(range); section++) {
- 		if ([self.collectionView numberOfItemsInSection:section] > 0) {
+ 		if (section != 0 && [self.collectionView numberOfItemsInSection:section] > 0) {
  			UICollectionViewLayoutAttributes *attributes = [self layoutAttributesForSupplementaryViewOfKind:[ITXNCGroupBackgroundView elementKind] atIndexPath:[NSIndexPath indexPathForItem:0 inSection:section]];
  			if (attributes) {
  				[result addObject:attributes];
@@ -91,6 +92,7 @@
 
 - (UICollectionViewLayoutAttributes *)layoutAttributesForSupplementaryViewOfKind:(NSString *)elementKind atIndexPath:(NSIndexPath *)indexPath {
 	// HBLogInfo(@"Method #96");
+	if ([indexPath section] == 0) return %orig;
 	if (elementKind && [elementKind isEqualToString:UICollectionElementKindSectionHeader]) {
 		if ([indexPath section] == 0) {
 			UICollectionViewLayoutAttributes *attributes = [self layoutAttributesForSupplementaryViewOfKind:UICollectionElementKindSectionHeader atIndexPath:[NSIndexPath indexPathForRow:0 inSection:1]];
@@ -204,6 +206,7 @@
 
 - (UICollectionViewLayoutAttributes *)initialLayoutAttributesForAppearingItemAtIndexPath:(NSIndexPath *)itemIndexPath {
 	// HBLogInfo(@"Method #97");
+	if ([itemIndexPath section] == 0) return %orig;
 	UICollectionViewLayoutAttributes *attributes = %orig;
 	if ([self.insertedIndexPaths containsObject:itemIndexPath]) {
 		//attributes.alpha = 2.0;
@@ -230,6 +233,7 @@
 
 - (UICollectionViewLayoutAttributes *)finalLayoutAttributesForDisappearingItemAtIndexPath:(NSIndexPath *)itemIndexPath {
 	// HBLogInfo(@"Method #98");
+	if ([itemIndexPath section] == 0) return %orig;
 	UICollectionViewLayoutAttributes *attributes = %orig;
 	// if ([itemIndexPath row] > 0) {
 	// 	UICollectionViewLayoutAttributes *aboveAttributes = %orig([NSIndexPath indexPathForRow:[itemIndexPath row] - 1 inSection:[itemIndexPath section]]);
@@ -255,6 +259,7 @@
 
 - (UICollectionViewLayoutAttributes *)layoutAttributesForFooterInSection:(NSInteger)section {
 	// HBLogInfo(@"Method #99");
+	if (section == 0) return %orig;
 	UICollectionViewLayoutAttributes *attributes = %orig;
 	if (section > [self priorityEndSection]) {
 		attributes.alpha = self.showingNotificationsHistory ? 1.0 : 0.0;
@@ -268,6 +273,7 @@
 
 - (UICollectionViewLayoutAttributes *)layoutAttributesForFooterInSection:(NSInteger)section usingData:(id)data {
 	// HBLogInfo(@"Method #100");
+	if (section == 0) return %orig;
 	UICollectionViewLayoutAttributes *attributes = %orig;
 	// attributes.alpha = self.showingNotificationsHistory ? 1.0 : 0.0;
 	if (section > [self priorityEndSection]) {

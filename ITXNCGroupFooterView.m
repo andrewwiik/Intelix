@@ -115,6 +115,13 @@
 	_shouldOverrideForReveal = NO;
 }
 
+- (void)setTextColor:(UIColor *)color {
+	if (_middleLabel) {
+		_middleLabel.textColor = color;
+		_middleLabel.layer.filters = nil;
+	}
+}
+
 - (void)applyLayoutAttributes:(UICollectionViewLayoutAttributes *)attributes {
 	[super applyLayoutAttributes:attributes];
 	if (_shouldOverrideForReveal) {

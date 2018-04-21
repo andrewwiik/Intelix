@@ -1,8 +1,6 @@
 #import <MaterialKit/MTMaterialView.h>
 #import <MaterialKit/MTPlatterHeaderContentView.h>
+#import <MaterialKit/MTTitledPlatterView.h>
 
-@interface NCNotificationShortLookView : UIView
-@property (nonatomic, retain) UIView *backgroundView;
-@property (nonatomic, retain) MTMaterialView *backgroundMaterialView;
-- (MTPlatterHeaderContentView *)_headerContentView;
+@interface NCNotificationShortLookView : MTTitledPlatterView
 @end

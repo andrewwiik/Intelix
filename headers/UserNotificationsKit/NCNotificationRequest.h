@@ -7,4 +7,5 @@
 @property (nonatomic, readonly) NCNotificationOptions *options;
 @property (nonatomic,readonly) NSDate *timestamp;
 @property (nonatomic,copy,readonly) NSString *notificationIdentifier; 
+@property (nonatomic,copy,readonly) NSSet *requestDestinations;
 @end

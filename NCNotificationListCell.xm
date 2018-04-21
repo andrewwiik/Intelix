@@ -5,6 +5,16 @@
 #import <Intelix/NCNotificationListCell.h>
 #import <UIKit/UICollectionViewCell+Private.h>
 #import <UIKit/UICollectionView+Private.h>
+#import <UIKit/UICollectionReusableView+Private.h>
+#import <UserNotificationsUIKit/NCNotificationShortLookViewController.h>
+
+@interface NCNotificationListCell (ITXStuff)
+- (NSInteger)cellSection;
+@end
+
+@interface NCNotificationViewController (ITXStuff)
+@property (nonatomic, assign) BOOL isRegularHeader;
+@end
 
 %hook NCNotificationListCell
 %property (nonatomic, retain) ITXNCGroupBackgroundView *itxBackgroundView;
@@ -16,6 +26,15 @@
 %property (nonatomic, retain) UIView *cellUnder;
 %property (nonatomic, retain) MTMaterialView *origBackgroundView;
 %property (nonatomic, retain) CGRect previousBounds;
+
+%new
+- (NSInteger)cellSection {
+	if (self.layoutAttributes) {
+		return [self.layoutAttributes.indexPath section];
+	} else {
+		return [[self.collectionView indexPathForCell:self] section];
+	}
+}
 
 %new
 - (ITXNCGroupBackgroundView *)sectionBackgroundView {
@@ -32,6 +51,10 @@
 %new
 - (void)setIsLastInSection:(BOOL)isLast {
 	// HBLogInfo(@"Method #77");
+	if ([self cellSection] == 0) {
+		self.separatorView.hidden = YES;
+		return;
+	}
 	if (self.itxBackgroundView) {
 	//if (isLast != self._isLastInSection) {
 		self._isLastInSection = isLast;
@@ -53,6 +76,20 @@
 
 - (void)updateCellForContentViewController:(id)controller {
 	%orig;
+	if ([self cellSection] == 0) {
+		((MTMaterialView *)self.contentViewController.view.contentView.backgroundMaterialView).hidden = NO;
+		if ([self.contentViewController.view.contentView valueForKey:@"_mainOverlayView"]) {
+			MTMaterialView *overlayView = [self.contentViewController.view.contentView valueForKey:@"_mainOverlayView"];
+			//overlayView._continuousCornerRadius = 0;
+			overlayView.hidden = NO;
+			overlayView.alpha = 1;
+		}
+		self.contentViewController.isRegularHeader = YES;
+		self.itxBackgroundView = nil;
+		self.origBackgroundView = nil;
+		if (self.separatorView) self.separatorView.hidden = YES;
+		return;
+	}
 	// HBLogInfo(@"Method #78");
 
 	if (!self.itxBackgroundView) {
@@ -155,6 +192,7 @@
 
 -(void)_updateRevealForActionButtonsClippingRevealView:(id)clippingView actionButtonsView:(id)buttonsView forRevealPercentage:(CGFloat)percentage actionButtonsViewNeedsClipping:(BOOL)needsClipping {
 	%orig;
+	if ([self cellSection] == 0) return;
 	// HBLogInfo(@"Method #79");
 	//return;
 	if (self.contentViewController && self.contentViewController.view) {
@@ -235,6 +273,7 @@
 }
 
 - (UICollectionViewLayoutAttributes *)preferredLayoutAttributesFittingAttributes:(UICollectionViewLayoutAttributes *)attributes {
+	if ([self cellSection] == 0) return %orig;
 	// HBLogInfo(@"Method #81");
 	// if (attributes.size.height < 1) {
 	// 	attributes.alpha = 0;
@@ -270,6 +309,14 @@
 
 - (void)applyLayoutAttributes:(UICollectionViewLayoutAttributes *)attributes {
 	// HBLogInfo(@"Method #83");
+	if (attributes && attributes.indexPath && [attributes.indexPath section] == 0) {
+		return %orig;
+	} else if (self.layoutAttributes) {
+		if ([self cellSection] == 0) {
+			return %orig;
+		}
+	}
+
 	CGRect frame = attributes.frame;
 	frame.origin.x = 8;
 	attributes.frame = frame;
@@ -299,6 +346,7 @@
 
 %new
 - (void)doITXStuff {
+	if ([self cellSection] == 0) return;
 	// HBLogInfo(@"Method #200");
 	if (self.contentViewController && self.contentViewController.view && self.contentViewController.view.contentView) {
 		CGFloat inset = 15.0;
@@ -350,6 +398,11 @@
 }
 
 - (void)layoutSubviews {
+	if ([self cellSection] == 0) {
+		if (self.separatorView) {
+			self.separatorView.hidden = YES;
+		}
+	}
 	// HBLogInfo(@"Method #85");
 	//if ([self needsLayout]) {
 		%orig;
